@@ -27,11 +27,18 @@ async function run() {
           > Hello ??
         `
       })
+      console.log('content?', content)
       octokit.issues.createComment({
         owner: github.context.repo.owner,
         repo: github.context.repo.repo,
         issue_number: prId,
-        body: content
+        body: `
+          # This is the title
+
+          Hello world, this is the content of the comment.
+
+          > Hello ??
+        `
       })
     }
 
