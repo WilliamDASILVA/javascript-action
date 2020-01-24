@@ -53,7 +53,24 @@ jobs:
         name: stats-target
     - name: Diff
       run: |
-        npx webpack-stats-diff ./stats-target/stats.json ./stats-source/stats.json
+        diff=`npx webpack-stats-diff ./stats-target/stats.json ./stats-source/stats.json`
+        echo $diff
+        echo $diff > diff.txt
+    - uses: jwalton/gh-find-current-pr@v1
+      id: findPr
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Create comment
+      uses: peter-evans/create-or-update-comment@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        issue-number: ${{ github.context.issue.number || steps.findPr.outputs.pr }}
+        body: |
+          This is a multi-line test comment
+          - With GitHub **Markdown**
+          - Created by [create-or-update-comment][1]
+
+          [1]: https://github.com/peter-evans/create-or-update-comment
     # - name: Print values
     #   shell: bash
     #   run: |
