@@ -1,17 +1,18 @@
 const core = require('@actions/core');
-const wait = require('./wait');
+const stats = require('./stats.json')
 
+const chunks = stats.chunks.map(chunk => ({
+  id: chunk.id,
+  size: chunk.size
+}))
 
 // most @actions toolkit packages have async methods
 async function run() {
   try { 
-    const ms = core.getInput('milliseconds');
-    console.log(`Waiting ${ms} milliseconds ...`)
-
-    core.debug((new Date()).toTimeString())
-    wait(parseInt(ms));
-    core.debug((new Date()).toTimeString())
-
+    core.debug('Chunks')
+    chunks.forEach(chunk => {
+      core.debug(`Chunk: ${chunk.id} - Size: ${chunk.size}`)
+    })
     core.setOutput('time', new Date().toTimeString());
   } 
   catch (error) {
