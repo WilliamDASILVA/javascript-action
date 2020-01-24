@@ -56,15 +56,13 @@ jobs:
         diff=`npx webpack-stats-diff ./stats-target/stats.json ./stats-source/stats.json`
         echo $diff
         echo $diff > diff.txt
-    - uses: jwalton/gh-find-current-pr@v1
-      id: findPr
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+    - uses: ./actions/pull-request
+      id: pr
     - name: Create comment
       uses: peter-evans/create-or-update-comment@v1
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-        issue-number: ${{ github.context.issue.number || steps.findPr.outputs.pr }}
+        issue-number: ${{ steps.pr.outputs.pull_request }}
         body: |
           This is a multi-line test comment
           - With GitHub **Markdown**
