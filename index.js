@@ -1,3 +1,4 @@
+const github = require('@actions/github');
 const core = require('@actions/core');
 const stats = require('./stats.json')
 
@@ -11,10 +12,21 @@ console.log('testing?', chunks)
 // most @actions toolkit packages have async methods
 async function run() {
   try { 
+    const myToken = core.getInput('GITHUB_TOKEN');
+    console.log('token', myToken)
+    // const octokit = new github.GitHub(myToken);
+    
+    // octokit.pulls.createComment({
+    //   owner,
+    //   repo,
+    //   pull_number,
+    //   body,
+    //   commit_id,
+    //   path
+    // })
     console.log('run??')
-    core.debug('Chunks')
     chunks.forEach(chunk => {
-      core.debug(`Chunk: ${chunk.id} - Size: ${chunk.size}`)
+      console.log(`Chunk: ${chunk.id} - Size: ${chunk.size}`)
     })
     core.setOutput('time', new Date().toTimeString());
   } 
