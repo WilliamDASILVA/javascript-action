@@ -18,8 +18,8 @@ async function run() {
     // console.log('token', myToken)
     if (prId) {
       const octokit = new github.GitHub(myToken);
-      const content = octokit.markdown.render({
-        text: `
+      const content = octokit.markdown.renderRaw({
+        data: `
           # This is the title
 
           Hello world, this is the content of the comment.
