@@ -28,4 +28,5 @@ jobs:
         PR: ${{ steps.findPr.outputs.pr }}
     - uses: ./
       with:
-        milliseconds: 1000
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        pull_request: ${{ steps.findPr.outputs.pr }}
