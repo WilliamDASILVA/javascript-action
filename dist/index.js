@@ -514,11 +514,20 @@ async function run() {
     // console.log('token', myToken)
     if (prId) {
       const octokit = new github.GitHub(myToken);
+      const content = octokit.markdown.render({
+        text: `
+          # This is the title
+
+          Hello world, this is the content of the comment.
+
+          > Hello ??
+        `
+      })
       octokit.issues.createComment({
         owner: github.context.repo.owner,
         repo: github.context.repo.repo,
         issue_number: prId,
-        body: 'This is a test ?'
+        body: content
       })
     }
 
