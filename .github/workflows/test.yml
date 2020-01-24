@@ -1,6 +1,5 @@
-name: "units-test"
+name: "Chunk difference"
 on:
-  pull_request:
   push:
 
 jobs:

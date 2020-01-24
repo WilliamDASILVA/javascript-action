@@ -6,9 +6,12 @@ const chunks = stats.chunks.map(chunk => ({
   size: chunk.size
 }))
 
+console.log('testing?', chunks)
+
 // most @actions toolkit packages have async methods
 async function run() {
   try { 
+    console.log('run??')
     core.debug('Chunks')
     chunks.forEach(chunk => {
       core.debug(`Chunk: ${chunk.id} - Size: ${chunk.size}`)
