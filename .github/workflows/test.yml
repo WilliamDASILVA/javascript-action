@@ -47,7 +47,12 @@ jobs:
       uses: actions/download-artifact@v1
       with:
         name: stats-source
-    - run: ls
+    - name: Download artifacts
+      uses: actions/download-artifact@v1
+      with:
+        name: stats-target
+    - run: cat ./stats-source/stats.json
+    - run: cat ./stats-target/stats.json
     # - name: Print values
     #   shell: bash
     #   run: |
