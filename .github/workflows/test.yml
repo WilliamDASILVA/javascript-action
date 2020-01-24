@@ -47,11 +47,12 @@ jobs:
       uses: actions/download-artifact@v1
       with:
         name: stats-source
-    - name: Print values
-      shell: bash
-      run: |
-        value=`cat ./apps/app/dist/stats.json`
-        echo The result is $value
+    - run: ls
+    # - name: Print values
+    #   shell: bash
+    #   run: |
+    #     value=`cat ./apps/app/dist/stats.json`
+    #     echo The result is $value
 
     # - uses: jwalton/gh-find-current-pr@v1
     #   id: findPr
