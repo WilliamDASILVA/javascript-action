@@ -54,19 +54,20 @@ module.exports = require("os");
 /***/ (function(__unusedmodule, __unusedexports, __webpack_require__) {
 
 const core = __webpack_require__(470);
-const wait = __webpack_require__(949);
+const stats = __webpack_require__(639)
 
+const chunks = stats.chunks.map(chunk => ({
+  id: chunk.id,
+  size: chunk.size
+}))
 
 // most @actions toolkit packages have async methods
 async function run() {
   try { 
-    const ms = core.getInput('milliseconds');
-    console.log(`Waiting ${ms} milliseconds ...`)
-
-    core.debug((new Date()).toTimeString())
-    wait(parseInt(ms));
-    core.debug((new Date()).toTimeString())
-
+    core.debug('Chunks')
+    chunks.forEach(chunk => {
+      core.debug(`Chunk: ${chunk.id} - Size: ${chunk.size}`)
+    })
     core.setOutput('time', new Date().toTimeString());
   } 
   catch (error) {
@@ -343,21 +344,10 @@ module.exports = require("path");
 
 /***/ }),
 
-/***/ 949:
+/***/ 639:
 /***/ (function(module) {
 
-let wait = function(milliseconds) {
-  return new Promise((resolve, reject) => {
-    if (typeof(milliseconds) !== 'number') { 
-      throw new Error('milleseconds not a number'); 
-    }
-
-    setTimeout(() => resolve("done!"), milliseconds)
-  });
-}
-
-module.exports = wait;
-
+module.exports = {"chunks":[{"id":"test","size":200},{"id":"hello","size":3000}]};
 
 /***/ })
 
