@@ -56,7 +56,7 @@ jobs:
         diff=`npx webpack-stats-diff ./stats-target/stats.json ./stats-source/stats.json`
         echo $diff
         echo $diff > diff.txt
-    - uses: ./actions/pull-request
+    - uses: ./
       id: pr
     - name: Create comment
       uses: peter-evans/create-or-update-comment@v1

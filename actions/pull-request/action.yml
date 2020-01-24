@@ -1,8 +1,0 @@
-name: Get pull-request ID
-description: 'Wait a designated number of milliseconds'
-outputs:
-  pull_request: # output will be available to future steps 
-    description: 'PR number'
-runs:
-  using: 'node12'
-  main: 'dist/index.js'
