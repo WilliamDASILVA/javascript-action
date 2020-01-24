@@ -508,20 +508,20 @@ console.log('testing?', chunks)
 // most @actions toolkit packages have async methods
 async function run() {
   try { 
-    console.log('Context', github.context)
-    console.log('PR ID?', core.getInput('pull_request'))
-    // const myToken = core.getInput('GITHUB_TOKEN');
+    const prId = core.getInput('pull_request') || github.context.issue.number
+    console.log('PR ID?', prId)
+    const myToken = core.getInput('GITHUB_TOKEN');
     // console.log('token', myToken)
-    // const octokit = new github.GitHub(myToken);
-    
-    // octokit.pulls.createComment({
-    //   owner,
-    //   repo,
-    //   pull_number,
-    //   body,
-    //   commit_id,
-    //   path
-    // })
+    if (prId) {
+      const octokit = new github.GitHub(myToken);
+      octokit.issues.createComment({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        issue_number: prId,
+        body: 'This is a test ?'
+      })
+    }
+
     console.log('run??')
     chunks.forEach(chunk => {
       console.log(`Chunk: ${chunk.id} - Size: ${chunk.size}`)
