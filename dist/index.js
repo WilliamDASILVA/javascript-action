@@ -508,6 +508,7 @@ console.log('testing?', chunks)
 // most @actions toolkit packages have async methods
 async function run() {
   try { 
+    console.log('Context', github.context)
     console.log('PR ID?', core.getInput('pull_request'))
     // const myToken = core.getInput('GITHUB_TOKEN');
     // console.log('token', myToken)
