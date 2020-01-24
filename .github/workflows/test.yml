@@ -4,16 +4,7 @@ on:
   # push:
 
 jobs:
-  # unit tests
-  # units:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #   - uses: actions/checkout@v1
-  #   - run: npm ci
-  #   - run: npm test
-
-  # test action works running from the graph  
-  test:
+  build-source:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
@@ -23,16 +14,54 @@ jobs:
     - name: Build
       run: npm run build
       working-directory: ./apps/app
-    - uses: jwalton/gh-find-current-pr@v1
-      id: findPr
+    - name: Copy stats for current build
+      uses: actions/upload-artifact@v1
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-    # This will echo "Your PR is 7", or be skipped if there is no current PR.
-    - run: echo "Your PR is ${PR}"
-      if: success() && steps.findPr.outputs.number
-      env:
-        PR: ${{ steps.findPr.outputs.pr }}
-    - uses: ./
+        name: stats-source
+        path: ./apps/app/dist/stats.json
+
+  build-target:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
       with:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        pull_request: ${{ steps.findPr.outputs.pr }}
+        ref: ${{ github.base_ref }}
+    - name: Install dependencies
+      run: npm ci
+      working-directory: ./apps/app
+    - name: Build
+      run: npm run build
+      working-directory: ./apps/app
+    - name: Copy stats for current build
+      uses: actions/upload-artifact@v1
+      with:
+        name: stats-target
+        path: ./apps/app/dist/stats.json
+
+  compare:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Download artifacts
+      uses: actions/download-artifact@v1
+      with:
+        name: stats-source
+    - name: Print values
+      shell: bash
+      run: |
+        value=`cat ./apps/app/dist/stats.json`
+        echo The result is $value
+
+    # - uses: jwalton/gh-find-current-pr@v1
+    #   id: findPr
+    #   with:
+    #     github-token: ${{ secrets.GITHUB_TOKEN }}
+    # # This will echo "Your PR is 7", or be skipped if there is no current PR.
+    # - run: echo "Your PR is ${PR}"
+    #   if: success() && steps.findPr.outputs.number
+    #   env:
+    #     PR: ${{ steps.findPr.outputs.pr }}
+    # - uses: ./
+    #   with:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #     pull_request: ${{ steps.findPr.outputs.pr }}
