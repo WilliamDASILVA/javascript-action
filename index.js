@@ -18,7 +18,7 @@ async function run() {
     // console.log('token', myToken)
     if (prId) {
       const octokit = new github.GitHub(myToken);
-      const content = octokit.markdown.renderRaw({
+      const content = await octokit.markdown.renderRaw({
         data: `
           # This is the title
 
@@ -28,18 +28,18 @@ async function run() {
         `
       })
       console.log('content?', content)
-      octokit.issues.createComment({
-        owner: github.context.repo.owner,
-        repo: github.context.repo.repo,
-        issue_number: prId,
-        body: `
-          # This is the title
+      // octokit.issues.createComment({
+      //   owner: github.context.repo.owner,
+      //   repo: github.context.repo.repo,
+      //   issue_number: prId,
+      //   body: `
+      //     # This is the title
 
-          Hello world, this is the content of the comment.
+      //     Hello world, this is the content of the comment.
 
-          > Hello ??
-        `
-      })
+      //     > Hello ??
+      //   `
+      // })
     }
 
     console.log('run??')
