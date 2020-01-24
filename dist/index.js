@@ -508,6 +508,7 @@ console.log('testing?', chunks)
 // most @actions toolkit packages have async methods
 async function run() {
   try { 
+    console.log('PR ID?', core.getInput('steps.findPr.outputs.pr'), core.getInput('steps.findPr.outputs.number'))
     const myToken = core.getInput('GITHUB_TOKEN');
     console.log('token', myToken)
     // const octokit = new github.GitHub(myToken);
