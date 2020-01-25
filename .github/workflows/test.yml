@@ -1,7 +1,8 @@
 name: "Chunk difference"
 on:
   pull_request:
-  # push:
+    paths:
+    - 'apps/app/src/**'
 
 jobs:
   build-source:
