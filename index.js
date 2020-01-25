@@ -2,6 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const github = require('@actions/github');
 const core = require('@actions/core');
+const markdownTable = require('markdown-table')
 const { getStatsDiff, printStatsDiff } = require('webpack-stats-diff');
 
 const checkPathExists = p => {
@@ -36,14 +37,21 @@ async function run() {
     console.log('diff', diff)
     printStatsDiff(getStatsDiff(oldAssets, newAssets, {}));
 
+    const totalSummary = markdownTable([
+      ['Old size', diff.total.oldSize],
+      ['New size', diff.total.newSize],
+      ['Diff', `${diff.total.diff} (${diff.total.diffPercentage}%)`]
+    ])
+
     await octokit.issues.createComment({
       owner: github.context.repo.owner,
       repo: github.context.repo.repo,
       issue_number: prId,
-      body: `Stats about bundle:
-        - Old: ${diff.total.oldSize}
-        - New: ${diff.total.newSize}
-        - Diff: ${diff.total.diff} (${diff.total.diffPercentage}%)
+      body: `# Bundle difference with \`${github.base_ref}\`:
+
+        ## Total summary
+
+        ${totalSummary}
       `
     })
 
