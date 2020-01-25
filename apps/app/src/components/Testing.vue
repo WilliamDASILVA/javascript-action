@@ -22,9 +22,3 @@
     name: 'testing'
   }
 </script>
-
-<style lang="scss" scoped>
-  .testing {
-
-  }
-</style>
