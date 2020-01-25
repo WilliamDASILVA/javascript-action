@@ -8,13 +8,11 @@
 
 <script>
 import HelloWorld from './components/HelloWorld.vue'
-import Testing from './components/Testing.vue'
 
 export default {
   name: 'app',
   components: {
-    HelloWorld,
-    Testing
+    HelloWorld
   }
 }
 </script>
