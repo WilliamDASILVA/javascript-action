@@ -14,7 +14,15 @@ jobs:
     - name: Build
       run: npm run build
       working-directory: ./apps/app
-    - run: cp ./apps/app/dist/stats.json /stats-source.json
+    - name: Copy stats for current build
+      uses: actions/upload-artifact@v1
+      with:
+        name: stats-source
+        path: ./apps/app/dist/stats.json
+
+  build-target:
+    runs-on: ubuntu-latest
+    steps:
     - uses: actions/checkout@v1
       with:
         ref: ${{ github.base_ref }}
@@ -24,58 +32,31 @@ jobs:
     - name: Build
       run: npm run build
       working-directory: ./apps/app
-    - run: cp ./apps/app/dist/stats.json /stats-target.json
+    - name: Copy stats for current build
+      uses: actions/upload-artifact@v1
+      with:
+        name: stats-target
+        path: ./apps/app/dist/stats.json
+
+  compare:
+    runs-on: ubuntu-latest
+    needs: [build-source, build-target]
+    steps:
+    - uses: actions/checkout@v1
+    - name: Download artifacts
+      uses: actions/download-artifact@v1
+      with:
+        name: stats-source
+    - name: Download artifacts
+      uses: actions/download-artifact@v1
+      with:
+        name: stats-target
     - name: Diff
-      run: |
-        diff=`npx webpack-stats-diff /stats-target.json /stats-source.json`
-        echo $diff
-        echo $diff > diff.txt
-    # - name: Copy stats for current build
-    #   uses: actions/upload-artifact@v1
-    #   with:
-    #     name: stats-source
-    #     path: ./apps/app/dist/stats.json
-
-  # build-target:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #   - name: Copy stats for current build
-  #     uses: actions/upload-artifact@v1
-  #     with:
-  #       name: stats-target
-  #       path: ./apps/app/dist/stats.json
-
-  # compare:
-  #   runs-on: ubuntu-latest
-  #   needs: [build-source, build-target]
-  #   steps:
-  #   - uses: actions/checkout@v1
-  #   - name: Download artifacts
-  #     uses: actions/download-artifact@v1
-  #     with:
-  #       name: stats-source
-  #   - name: Download artifacts
-  #     uses: actions/download-artifact@v1
-  #     with:
-  #       name: stats-target
-  #   - name: Diff
-  #     run: |
-  #       diff=`npx webpack-stats-diff ./stats-target/stats.json ./stats-source/stats.json`
-  #       echo $diff
-  #       echo $diff > diff.txt
-  #   - uses: ./
-  #     id: pr
-  #   - name: Create comment
-  #     uses: peter-evans/create-or-update-comment@v1
-  #     with:
-  #       token: ${{ secrets.GITHUB_TOKEN }}
-  #       issue-number: ${{ steps.pr.outputs.pull_request }}
-  #       body: |
-  #         This is a multi-line test comment
-  #         - With GitHub **Markdown**
-  #         - Created by [create-or-update-comment][1]
-
-  #         [1]: https://github.com/peter-evans/create-or-update-comment
+      uses: ./
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        old_stats: ./stats-target/stats.json
+        new_stats: ./stats-source/stats.json
     # - name: Print values
     #   shell: bash
     #   run: |
