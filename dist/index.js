@@ -1032,6 +1032,7 @@ async function run() {
 
     // Find PR ID
     console.log('context', github.context)
+    console.log('issue', github.issue)
     const prId = github.context.issue.number
     if (!prId) {
       throw new Error('Cannot find the PR id.')
@@ -1059,7 +1060,8 @@ async function run() {
     ])
 
     const formattedAssets = []
-    ['added', 'removed', 'bigger', 'smaller']
+    const fields = ['added', 'removed', 'bigger', 'smaller']
+    fields
       .forEach(field => {
         const assets = diff[field];
         if (assets.length > 0) {
