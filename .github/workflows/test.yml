@@ -1,7 +1,8 @@
 name: "Chunk difference"
 on:
   pull_request:
-  # push:
+    paths:
+    - 'apps/app/src/**'
 
 jobs:
   build-source:
@@ -47,11 +48,21 @@ jobs:
       uses: actions/download-artifact@v1
       with:
         name: stats-source
-    - name: Print values
-      shell: bash
-      run: |
-        value=`cat ./apps/app/dist/stats.json`
-        echo The result is $value
+    - name: Download artifacts
+      uses: actions/download-artifact@v1
+      with:
+        name: stats-target
+    - name: Diff
+      uses: ./
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        old_stats: ./stats-target/stats.json
+        new_stats: ./stats-source/stats.json
+    # - name: Print values
+    #   shell: bash
+    #   run: |
+    #     value=`cat ./apps/app/dist/stats.json`
+    #     echo The result is $value
 
     # - uses: jwalton/gh-find-current-pr@v1
     #   id: findPr

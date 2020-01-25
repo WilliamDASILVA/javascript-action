@@ -1,52 +1,105 @@
+const path = require('path');
+const fs = require('fs');
 const github = require('@actions/github');
 const core = require('@actions/core');
-const stats = require('./stats.json')
+const markdownTable = require('markdown-table')
+const { getStatsDiff, printStatsDiff } = require('webpack-stats-diff');
 
-const chunks = stats.chunks.map(chunk => ({
-  id: chunk.id,
-  size: chunk.size
-}))
+const checkPathExists = p => {
+  if (!fs.existsSync(p)) {
+    throw new Error(`Error: ${p} does not exist!`);
+  }
+};
 
-console.log('testing?', chunks)
+const getSizeText = size => {
+  if (size === 0) {
+    return '0';
+  }
 
-// most @actions toolkit packages have async methods
+  const abbreviations = ['bytes', 'KiB', 'MiB', 'GiB'];
+  const index = Math.floor(Math.log(Math.abs(size)) / Math.log(1024));
+
+  return `${+(size / Math.pow(1024, index)).toPrecision(3)} ${
+    abbreviations[index]
+  }`;
+};
+
+
 async function run() {
-  try { 
-    const prId = core.getInput('pull_request') || github.context.issue.number
-    console.log('PR ID?', prId)
-    const myToken = core.getInput('GITHUB_TOKEN');
-    const octokit = new github.GitHub(myToken);
-    // // console.log('token', myToken)
-    // if (prId) {
-    //   const content = await octokit.markdown.render({
-    //     data: `# This is the title
+  try {
+    const octokit = new github.GitHub(core.getInput('token'));
 
-    //       Hello world, this is the content of the comment.
+    // Find PR ID
+    console.log('context', github.context)
+    console.log('issue', github.issue)
+    const prId = github.context.issue.number
+    if (!prId) {
+      throw new Error('Cannot find the PR id.')
+    }
 
-    //       > Hello ??
-    //     `
-    //   })
-    //   console.log('content?', content)
-    //   // octokit.issues.createComment({
-    //   //   owner: github.context.repo.owner,
-    //   //   repo: github.context.repo.repo,
-    //   //   issue_number: prId,
-    //   //   body: `
-    //   //     # This is the title
+    const oldStats = core.getInput('old_stats')
+    const newStats = core.getInput('new_stats')
 
-    //   //     Hello world, this is the content of the comment.
+    const oldPath = path.resolve(process.cwd(), oldStats);
+    const newPath = path.resolve(process.cwd(), newStats);
 
-    //   //     > Hello ??
-    //   //   `
-    //   // })
-    // }
+    checkPathExists(oldPath);
+    checkPathExists(newPath);
 
-    console.log('run??')
-    chunks.forEach(chunk => {
-      console.log(`Chunk: ${chunk.id} - Size: ${chunk.size}`)
+    const oldAssets = require(oldPath).assets;
+    const newAssets = require(newPath).assets;
+
+    const diff = getStatsDiff(oldAssets, newAssets, {})
+    console.log('diff', diff)
+    printStatsDiff(getStatsDiff(oldAssets, newAssets, {}));
+
+    const totalSummary = markdownTable([
+      ['Old size', 'New size', 'Diff'],
+      [getSizeText(diff.total.oldSize), getSizeText(diff.total.newSize), `${getSizeText(diff.total.diff)} (${diff.total.diffPercentage.toFixed(2)}%)`]
+    ])
+
+    const formattedAssets = []
+    const fields = ['added', 'removed', 'bigger', 'smaller']
+    fields
+      .forEach(field => {
+        const assets = diff[field];
+        if (assets.length > 0) {
+          const tableData = [
+            ...assets.map(asset => [
+              asset.name,
+              getSizeText(asset.oldSize),
+              getSizeText(asset.newSize),
+              getSizeText(asset.diff),
+              `${asset.diffPercentage.toFixed(2)} %`
+            ])
+          ];
+
+          formattedAssets.push(tableData)
+        }
+      });
+
+    const assets = markdownTable([
+      ['Asset', 'Old size', 'New size', 'Diff'],
+      ...formattedAssets
+    ])
+
+    await octokit.issues.createComment({
+      owner: github.context.repo.owner,
+      repo: github.context.repo.repo,
+      issue_number: prId,
+      body: `# Bundle difference:
+## Total summary
+
+${totalSummary}
+
+## Assets
+${assets}
+`
     })
-    core.setOutput('time', new Date().toTimeString());
-  } 
+
+    core.setOutput('pull_request', github.context.issue.number);
+    core.setOutput('diff', diff);
+  }
   catch (error) {
     core.setFailed(error.message);
   }
