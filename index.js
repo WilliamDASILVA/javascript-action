@@ -11,11 +11,26 @@ const checkPathExists = p => {
   }
 };
 
+const getSizeText = size => {
+  if (size === 0) {
+    return '0';
+  }
+
+  const abbreviations = ['bytes', 'KiB', 'MiB', 'GiB'];
+  const index = Math.floor(Math.log(Math.abs(size)) / Math.log(1024));
+
+  return `${+(size / Math.pow(1024, index)).toPrecision(3)} ${
+    abbreviations[index]
+  }`;
+};
+
+
 async function run() {
   try {
     const octokit = new github.GitHub(core.getInput('token'));
 
     // Find PR ID
+    console.log('context', github.context)
     const prId = github.context.issue.number
     if (!prId) {
       throw new Error('Cannot find the PR id.')
@@ -38,21 +53,46 @@ async function run() {
     printStatsDiff(getStatsDiff(oldAssets, newAssets, {}));
 
     const totalSummary = markdownTable([
-      ['Old size', diff.total.oldSize],
-      ['New size', diff.total.newSize],
-      ['Diff', `${diff.total.diff} (${diff.total.diffPercentage}%)`]
+      ['Old size', 'New size', 'Diff'],
+      [getSizeText(diff.total.oldSize), getSizeText(diff.total.newSize), `${getSizeText(diff.total.diff)} (${diff.total.diffPercentage.toFixed(2)}%)`]
+    ])
+
+    const formattedAssets = []
+    ['added', 'removed', 'bigger', 'smaller']
+      .forEach(field => {
+        const assets = diff[field];
+        if (assets.length > 0) {
+          const tableData = [
+            ...assets.map(asset => [
+              asset.name,
+              getSizeText(asset.oldSize),
+              getSizeText(asset.newSize),
+              getSizeText(asset.diff),
+              `${asset.diffPercentage.toFixed(2)} %`
+            ])
+          ];
+
+          formattedAssets.push(tableData)
+        }
+      });
+
+    const assets = markdownTable([
+      ['Asset', 'Old size', 'New size', 'Diff'],
+      ...formattedAssets
     ])
 
     await octokit.issues.createComment({
       owner: github.context.repo.owner,
       repo: github.context.repo.repo,
       issue_number: prId,
-      body: `# Bundle difference with \`${github.base_ref}\`:
+      body: `# Bundle difference:
+## Total summary
 
-        ## Total summary
+${totalSummary}
 
-        ${totalSummary}
-      `
+## Assets
+${assets}
+`
     })
 
     core.setOutput('pull_request', github.context.issue.number);
